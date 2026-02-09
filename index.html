@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Concern Decision Path</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .title-box {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #48bb78;
+        }
+        
+        .title-box h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        
+        .title-box p {
+            color: #e53e3e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .question {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-direction: row;
+        }
+        
+        button {
+            padding: 15px 50px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .option-btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #e6f7ed;
+            color: #1a3a26;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 600;
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            background: #d1f0dc;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.2);
+        }
+        
+        .yes-btn {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .yes-btn:hover:not(:disabled) {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+        
+        .no-btn {
+            background: #f56565;
+            color: white;
+        }
+        
+        .no-btn:hover:not(:disabled) {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+        
+        .undo-btn {
+            background: #718096;
+            color: white;
+            margin-top: 20px;
+            display: none;
+            padding: 10px 30px;
+            font-size: 14px;
+        }
+        
+        .undo-btn:hover {
+            background: #4a5568;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(113, 128, 150, 0.4);
+        }
+        
+        .path-tracker {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .path-item {
+            margin: 5px 0;
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-box">
+            <h1>Lawn Mowing Dispute Assessment</h1>
+            <p><strong>NOTE:</strong> This tool is a guide to help with decision making when reviewing lawn mowing disputes. It helps you review key details and provides direction based on the information entered.</p>
+            <p style="margin-top: 10px;">This tool does not replace agent judgment or company guidelines. Always review the full situation and follow current policies when making the final decision. If you need further help resolving the dispute, please reach out to Escalations.</p>
+        </div>
+        
+        <div class="question" id="question">
+            Was the concern reported within 5 days of service completion?
+        </div>
+        
+        <div class="buttons" id="buttonsDiv">
+            <button class="yes-btn" onclick="answerQuestion1('yes')">Yes</button>
+            <button class="no-btn" onclick="answerQuestion1('no')">No</button>
+        </div>
+        
+        <button class="undo-btn" id="undoBtn" onclick="undoLast()">Undo</button>
+        
+        <div class="path-tracker" id="pathTracker" style="display: none;">
+            <strong>Your Path:</strong>
+            <div id="pathContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let path = [];
+        
+        function answerQuestion1(answer) {
+            document.querySelectorAll('#buttonsDiv button').forEach(b => b.disabled = true);
+            
+            path.push({
+                question: 'Was the concern reported within 5 days of service completion?',
+                answer: answer
+            });
+            
+            updatePath();
+            document.getElementById('undoBtn').style.display = 'block';
+            
+            if (answer === 'no') {
+                showMessage('Deny the dispute. Our dispute policy states that service concerns must be reported within 5 days of service completion. For lawn mowing services, grass growth can make it difficult to assess the lawn\'s condition after this timeframe.');
+            } else {
+                document.getElementById('question').textContent = 'Was a dispute previously submitted? (Check Admin)';
+                document.getElementById('buttonsDiv').innerHTML = '<button class="yes-btn" onclick="answerQuestion2(\'yes\')">Yes</button><button class="no-btn" onclick="answerQuestion2(\'no\')">No</button>';
+            }
+        }
+        
+        function answerQuestion2(answer) {
+            document.querySelectorAll('#buttonsDiv button').forEach(b => b.disabled = true);
+            
+            path.push({
+                question: 'Was a dispute previously submitted? (Check Admin)',
+                answer: answer
+            });
+            
+            updatePath();
+            
+            document.getElementById('question').textContent = 'What was the service issue?';
+            document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion3(\'No work done\')">No work done</button><button class="option-btn" onclick="answerQuestion3(\'Partial Completion/Quality Issue\')">Partial Completion/Quality Issue</button>';
+            document.getElementById('buttonsDiv').style.flexDirection = 'column';
+            document.getElementById('buttonsDiv').style.gap = '15px';
+        }
+        
+        function answerQuestion3(answer) {
+            const btn = event.target;
+            
+            if (btn.disabled) return;
+            
+            btn.innerHTML = '✓ ' + answer;
+            btn.style.background = '#c6e8d1';
+            btn.style.color = '#1e4d2b';
+            
+            document.querySelectorAll('.option-btn').forEach(b => {
+                if (b !== btn) {
+                    b.style.background = '#e2e8f0';
+                    b.style.color = '#a0aec0';
+                }
+                b.disabled = true;
+            });
+            
+            path.push({
+                question: 'What was the service issue?',
+                answer: answer
+            });
+            
+            updatePath();
+            
+            const disputeAnswer = path.find(item => item.question === 'Was a dispute previously submitted? (Check Admin)');
+            
+            if (answer === 'No work done') {
+                if (disputeAnswer && disputeAnswer.answer === 'no') {
+                    setTimeout(() => {
+                        showMessage('Submit a dispute in Admin and select Fix. Set clear expectations with the customer.');
+                    }, 500);
+                } else if (disputeAnswer && disputeAnswer.answer === 'yes') {
+                    setTimeout(() => {
+                        document.getElementById('question').textContent = 'What is the dispute status?';
+                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                        document.getElementById('buttonsDiv').style.display = 'flex';
+                        document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                        document.getElementById('buttonsDiv').style.gap = '15px';
+                    }, 500);
+                }
+            } else if (answer === 'Partial Completion/Quality Issue') {
+                if (disputeAnswer && disputeAnswer.answer === 'no') {
+                    setTimeout(() => {
+                        showMessage('Offer a fix or return request first. If the customer agrees, submit the dispute in Admin and select Fix. If the customer declines the fix, offer a $15 credit. Then submit the dispute in Admin and select $15 Credit.');
+                    }, 500);
+                } else if (disputeAnswer && disputeAnswer.answer === 'yes') {
+                    setTimeout(() => {
+                        document.getElementById('question').textContent = 'What is the dispute status?';
+                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                        document.getElementById('buttonsDiv').style.display = 'flex';
+                        document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                        document.getElementById('buttonsDiv').style.gap = '15px';
+                    }, 500);
+                }
+            }
+        }
+        
+        function answerQuestion4(answer) {
+            const btn = event.target;
+            
+            if (btn.disabled) return;
+            
+            btn.innerHTML = '✓ ' + answer;
+            btn.style.background = '#c6e8d1';
+            btn.style.color = '#1e4d2b';
+            
+            document.querySelectorAll('.option-btn').forEach(b => {
+                if (b !== btn) {
+                    b.style.background = '#e2e8f0';
+                    b.style.color = '#a0aec0';
+                }
+                b.disabled = true;
+            });
+            
+            path.push({
+                question: 'What is the dispute status?',
+                answer: answer
+            });
+            
+            updatePath();
+            
+            if (answer === 'New') {
+                setTimeout(() => {
+                    showMessage('Advise the customer that a dispute has been submitted and the Pro has been asked to return to fix the service issue. Check the dispute expiration date and time, and inform the customer that the Pro has until then to respond. Set clear expectations, including what happens if the dispute expires or if the Pro declines.');
+                }, 500);
+            } else if (answer === 'Credit') {
+                // Check if service issue was "No work done" or "Partial Completion/Quality Issue"
+                const serviceIssue = path.find(item => item.question === 'What was the service issue?');
+                
+                if (serviceIssue && serviceIssue.answer === 'No work done') {
+                    setTimeout(() => {
+                        showMessage('Check Billing to confirm if the $15 credit was applied. If applied, contact Escalations to remove the $15 credit and initiate a manual dispute.');
+                    }, 500);
+                } else if (serviceIssue && serviceIssue.answer === 'Partial Completion/Quality Issue') {
+                    setTimeout(() => {
+                        showMessage('Check Billing to confirm if the $15 Quality credit was applied. If applied, inform the customer the dispute is now resolved since the dispute was submitted and the $15 credit was selected as the resolution.');
+                    }, 500);
+                }
+            } else if (answer === 'Completed') {
+                setTimeout(() => {
+                    document.getElementById('question').textContent = 'What is the status of the scheduled Fix?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion5(\'Scheduled\')">Scheduled</button><button class="option-btn" onclick="answerQuestion5(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion5(\'Cancelled\')">Cancelled</button><button class="option-btn" onclick="answerQuestion5(\'In the Marketplace\')">In the Marketplace</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                    document.getElementById('buttonsDiv').style.gap = '15px';
+                }, 500);
+            } else if (answer === 'Change Pro Requested') {
+                // Check if service issue was "No work done" or "Partial Completion/Quality Issue"
+                const serviceIssue = path.find(item => item.question === 'What was the service issue?');
+                
+                if (serviceIssue && serviceIssue.answer === 'No work done') {
+                    setTimeout(() => {
+                        showMessage('Check Billing to confirm if the charge was reversed. If not, use the "Credit/Pull Payout" button to reverse the charge. Inform the customer of the action taken and set clear expectations.');
+                    }, 500);
+                } else if (serviceIssue && serviceIssue.answer === 'Partial Completion/Quality Issue') {
+                    setTimeout(() => {
+                        showMessage('Inform the customer a dispute was submitted and changing the Pro was selected as the resolution. If the customer insists on a credit, you may offer a $15 credit for partial completion or quality concerns. This should only be offered if the customer insists.');
+                    }, 500);
+                }
+            }
+        }
+        
+        function answerQuestion5(answer) {
+            const btn = event.target;
+            
+            if (btn.disabled) return;
+            
+            btn.innerHTML = '✓ ' + answer;
+            btn.style.background = '#c6e8d1';
+            btn.style.color = '#1e4d2b';
+            
+            document.querySelectorAll('.option-btn').forEach(b => {
+                if (b !== btn) {
+                    b.style.background = '#e2e8f0';
+                    b.style.color = '#a0aec0';
+                }
+                b.disabled = true;
+            });
+            
+            path.push({
+                question: 'What is the status of the scheduled Fix?',
+                answer: answer
+            });
+            
+            updatePath();
+            
+            if (answer === 'Scheduled') {
+                setTimeout(() => {
+                    showMessage('Advise the customer of the scheduled Fix date. Inform them that Pros work from sunup to sundown. Also, advise the customer to message their Pro through the app\'s Inbox feature.');
+                }, 500);
+            } else if (answer === 'Completed') {
+                setTimeout(() => {
+                    document.getElementById('question').textContent = 'Do the photos confirm that the Fix was completed?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion6(\'Yes\')">Yes</button><button class="option-btn" onclick="answerQuestion6(\'No - False Photos\')">No - False Photos</button><button class="option-btn" onclick="answerQuestion6(\'Unsure\')">Unsure</button><button class="option-btn" onclick="answerQuestion6(\'No Photos Uploaded\')">No Photos Uploaded</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                    document.getElementById('buttonsDiv').style.gap = '15px';
+                }, 500);
+            } else if (answer === 'Cancelled') {
+                // Check if service issue was "No work done" or "Partial Completion/Quality Issue"
+                const serviceIssue = path.find(item => item.question === 'What was the service issue?');
+                
+                if (serviceIssue && serviceIssue.answer === 'No work done') {
+                    setTimeout(() => {
+                        showMessage('Determine why the Fix was canceled. Based on the findings, take the appropriate next steps, which may include reversing the service charge.');
+                    }, 500);
+                } else if (serviceIssue && serviceIssue.answer === 'Partial Completion/Quality Issue') {
+                    setTimeout(() => {
+                        showMessage('Determine why the Fix was canceled. Based on the findings, take the appropriate next steps.');
+                    }, 500);
+                }
+            } else if (answer === 'In the Marketplace') {
+                setTimeout(() => {
+                    showMessage('Determine why the Fix was redistributed. Based on the findings, take the appropriate next steps, which may include cancelling the fix and reversing the service charge.');
+                }, 500);
+            }
+        }
+        
+        function answerQuestion6(answer) {
+            const btn = event.target;
+            
+            if (btn.disabled) return;
+            
+            btn.innerHTML = '✓ ' + answer;
+            btn.style.background = '#c6e8d1';
+            btn.style.color = '#1e4d2b';
+            
+            document.querySelectorAll('.option-btn').forEach(b => {
+                if (b !== btn) {
+                    b.style.background = '#e2e8f0';
+                    b.style.color = '#a0aec0';
+                }
+                b.disabled = true;
+            });
+            
+            path.push({
+                question: 'Do the photos confirm that the Fix was completed?',
+                answer: answer
+            });
+            
+            updatePath();
+            
+            if (answer === 'Yes') {
+                setTimeout(() => {
+                    showMessage('Inform the customer that the Pro marked the Fix as complete and share the photos as proof of completed service.');
+                }, 500);
+            } else if (answer === 'No - False Photos') {
+                setTimeout(() => {
+                    showMessage('Inform the customer that the Fix has been marked complete and ask them to confirm if the service concern has been resolved. If the customer confirms, mark the issue as resolved. If the customer says the issue is not fixed, use the "Credit/Pull Payout" button on the original service (not the Fix) to reverse the charge and redistribute the service.');
+                }, 500);
+            } else if (answer === 'Unsure') {
+                setTimeout(() => {
+                    showMessage('Conduct further review. Ask probing questions and check the Inbox for additional context. If still unable to determine next steps, contact Escalations for assistance.');
+                }, 500);
+            } else if (answer === 'No Photos Uploaded') {
+                setTimeout(() => {
+                    showMessage('Inform the customer that the Fix has been marked complete and confirm if the service concern has been resolved. If the customer says no, use "Credit/Pull Payout" button on the original service (not the Fix) to reverse the charge and redistribute the service.');
+                }, 500);
+            }
+        }
+        
+        function showMessage(msg) {
+            document.getElementById('question').innerHTML = msg;
+            document.getElementById('buttonsDiv').style.display = 'none';
+        }
+        
+        function updatePath() {
+            const tracker = document.getElementById('pathTracker');
+            const content = document.getElementById('pathContent');
+            
+            tracker.style.display = 'block';
+            content.innerHTML = path.map((item, index) => 
+                '<div class="path-item">' + (index + 1) + '. ' + item.question + ' → <strong>' + item.answer.toUpperCase() + '</strong></div>'
+            ).join('');
+        }
+        
+        function undoLast() {
+            if (path.length === 0) return;
+            
+            path.pop();
+            
+            if (path.length === 0) {
+                document.getElementById('question').textContent = 'Was the concern reported within 5 days of service completion?';
+                document.getElementById('buttonsDiv').innerHTML = '<button class="yes-btn" onclick="answerQuestion1(\'yes\')">Yes</button><button class="no-btn" onclick="answerQuestion1(\'no\')">No</button>';
+                document.getElementById('buttonsDiv').style.display = 'flex';
+                document.getElementById('buttonsDiv').style.flexDirection = 'row';
+                document.getElementById('undoBtn').style.display = 'none';
+                document.getElementById('pathTracker').style.display = 'none';
+            } else {
+                // Get the last question in the path
+                const lastQuestion = path[path.length - 1].question;
+                
+                if (lastQuestion === 'Was the concern reported within 5 days of service completion?') {
+                    document.getElementById('question').textContent = 'Was a dispute previously submitted? (Check Admin)';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="yes-btn" onclick="answerQuestion2(\'yes\')">Yes</button><button class="no-btn" onclick="answerQuestion2(\'no\')">No</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'row';
+                } else if (lastQuestion === 'Was a dispute previously submitted? (Check Admin)') {
+                    document.getElementById('question').textContent = 'What was the service issue?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion3(\'No work done\')">No work done</button><button class="option-btn" onclick="answerQuestion3(\'Partial Completion/Quality Issue\')">Partial Completion/Quality Issue</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                } else if (lastQuestion === 'What was the service issue?') {
+                    document.getElementById('question').textContent = 'What is the dispute status?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                } else if (lastQuestion === 'What is the dispute status?') {
+                    document.getElementById('question').textContent = 'What is the status of the scheduled Fix?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion5(\'Scheduled\')">Scheduled</button><button class="option-btn" onclick="answerQuestion5(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion5(\'Cancelled\')">Cancelled</button><button class="option-btn" onclick="answerQuestion5(\'In the Marketplace\')">In the Marketplace</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                } else if (lastQuestion === 'What is the status of the scheduled Fix?') {
+                    document.getElementById('question').textContent = 'Do the photos confirm that the Fix was completed?';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion6(\'Yes\')">Yes</button><button class="option-btn" onclick="answerQuestion6(\'No - False Photos\')">No - False Photos</button><button class="option-btn" onclick="answerQuestion6(\'Unsure\')">Unsure</button><button class="option-btn" onclick="answerQuestion6(\'No Photos Uploaded\')">No Photos Uploaded</button>';
+                    document.getElementById('buttonsDiv').style.display = 'flex';
+                    document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                }
+                
+                updatePath();
+            }
+        }
+    </script>
+</body>
+</html>
