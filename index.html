@@ -240,7 +240,7 @@
                 } else if (disputeAnswer && disputeAnswer.answer === 'yes') {
                     setTimeout(() => {
                         document.getElementById('question').textContent = 'What is the dispute status?';
-                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Expired\')">Expired</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
                         document.getElementById('buttonsDiv').style.display = 'flex';
                         document.getElementById('buttonsDiv').style.flexDirection = 'column';
                         document.getElementById('buttonsDiv').style.gap = '15px';
@@ -254,7 +254,7 @@
                 } else if (disputeAnswer && disputeAnswer.answer === 'yes') {
                     setTimeout(() => {
                         document.getElementById('question').textContent = 'What is the dispute status?';
-                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                        document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Expired\')">Expired</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
                         document.getElementById('buttonsDiv').style.display = 'flex';
                         document.getElementById('buttonsDiv').style.flexDirection = 'column';
                         document.getElementById('buttonsDiv').style.gap = '15px';
@@ -312,6 +312,10 @@
                     document.getElementById('buttonsDiv').style.flexDirection = 'column';
                     document.getElementById('buttonsDiv').style.gap = '15px';
                 }, 500);
+            } else if (answer === 'Expired') {
+                setTimeout(() => {
+                    showMessage('<ul style="text-align: left; padding-left: 20px;"><li>Inform the customer the Pro was asked to return, but they did not respond and the request has expired.</li><li>Check Billing and confirm if the charge was reversed. If yes, inform the customer.</li><li>If a new Pro is already assigned, inform the customer and share next scheduling details.</li><li>If we are still looking for a new Pro, inform the customer and set clear expectations.</li></ul>');
+                }, 500);
             } else if (answer === 'Change Pro Requested') {
                 // Check if service issue was "No work done" or "Partial Completion/Quality Issue"
                 const serviceIssue = path.find(item => item.question === 'What was the service issue?');
@@ -363,6 +367,10 @@
                     document.getElementById('buttonsDiv').style.display = 'flex';
                     document.getElementById('buttonsDiv').style.flexDirection = 'column';
                     document.getElementById('buttonsDiv').style.gap = '15px';
+                }, 500);
+            } else if (answer === 'Expired') {
+                setTimeout(() => {
+                    showMessage('<ul style="text-align: left; padding-left: 20px;"><li>Inform the customer the Pro was asked to return, but they did not respond and the request has expired.</li><li>Check Billing and confirm if the charge was reversed. If yes, inform the customer.</li><li>If a new Pro is already assigned, inform the customer and share next scheduling details.</li><li>If we are still looking for a new Pro, inform the customer and set clear expectations.</li></ul>');
                 }, 500);
             } else if (answer === 'Cancelled') {
                 // Check if service issue was "No work done" or "Partial Completion/Quality Issue"
@@ -470,7 +478,7 @@
                     document.getElementById('buttonsDiv').style.flexDirection = 'column';
                 } else if (lastQuestion === 'What was the service issue?') {
                     document.getElementById('question').textContent = 'What is the dispute status?';
-                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Expired\')">Expired</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
                     document.getElementById('buttonsDiv').style.display = 'flex';
                     document.getElementById('buttonsDiv').style.flexDirection = 'column';
                 } else if (lastQuestion === 'What is the dispute status?') {
@@ -483,6 +491,11 @@
                     document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion6(\'Yes\')">Yes</button><button class="option-btn" onclick="answerQuestion6(\'No - False Photos\')">No - False Photos</button><button class="option-btn" onclick="answerQuestion6(\'Unsure\')">Unsure</button><button class="option-btn" onclick="answerQuestion6(\'No Photos Uploaded\')">No Photos Uploaded</button>';
                     document.getElementById('buttonsDiv').style.display = 'flex';
                     document.getElementById('buttonsDiv').style.flexDirection = 'column';
+                }
+                
+                // Special handling: if going back TO dispute status, restore all options
+                if (document.getElementById('question').textContent === 'What is the dispute status?') {
+                    document.getElementById('buttonsDiv').innerHTML = '<button class="option-btn" onclick="answerQuestion4(\'New\')">New</button><button class="option-btn" onclick="answerQuestion4(\'Completed\')">Completed</button><button class="option-btn" onclick="answerQuestion4(\'Expired\')">Expired</button><button class="option-btn" onclick="answerQuestion4(\'Credit\')">Credit</button><button class="option-btn" onclick="answerQuestion4(\'Change Pro Requested\')">Change Pro Requested</button>';
                 }
                 
                 updatePath();
